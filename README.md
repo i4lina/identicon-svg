@@ -10,8 +10,8 @@ While the original library allows for various types of identicon, such as square
 
 # Example
 
-This will generate a new identicon.\
-The size of the new svg will be between 4x4 and 8x8 (always a square), the width will be 128, the color will be randomly chosen.\
+This will generate a new identicon.
+The size of the new svg will be between 4x4 and 8x8 (always a square), the width will be 128, the color will be randomly chosen.
 
 Identicon are made from hex hashes and you can provide one yourself. This is not a mean of encryption and you should not be using data relative to the user. That's why by default the hex hash is randomly generated. A function to create random hex hashes is also avalible.
 

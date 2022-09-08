@@ -1,6 +1,6 @@
 # identicon-svg
 
-Rust crate to quicly generate identicon avatar svgs.
+Rust crate to quickly generate identicon avatar svgs.
 
 Generate a new svg containing the identicon, given a size, a width and an hexadecimal string.
 

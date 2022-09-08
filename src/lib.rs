@@ -7,13 +7,22 @@
 //!
 //! # Example
 //!
-//! This will generate a new identicon of size 5x5. The color will be generated randomly.
+//! This will generate a new identicon.\
+//! The size of the new svg will be between 4x4 and 8x8 (always a square), the width will be 128, the color will be randomly chosen.\
+//!
+//! Identicon are made from hex hashes and you can provide one yourself. This is not a mean of encryption and you should not be using data relative to the user. That's why by default the hex hash is randomly generated. A function to create random hex hashes is also avalible.
 //! ```
 //! use identicons_svg::generate;
 //!
-//! let svg: String = generate("6a556d38357143305a4d6642724e45", 5, 128, None)
+//! let svg: String = generate(IdenticonOptions::default())
 //! // svg will be a valid xml string, it could be saved to a file or displayed in a web page
+//!```
+//!
+//! # Optional features
+//!
+//! - **`show-icon`** - Function `show_icon(icon: &str)` to save the svg in a temporary file and open it in a tab of the default browser
 
+use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use random_color::RandomColor;
 use simple_xml_builder::XMLElement;
 
@@ -22,24 +31,22 @@ use simple_xml_builder::XMLElement;
 /// # Example
 ///
 /// ```
-/// let svg = generate("6a556d38357143305a4d6642724e45", 5, 128, None)
+/// let svg = generate(IdenticonOptions {color: "#a97896", width: 50, ..Default::default()})
 /// ```
 ///
 /// # Panics
 /// If the hash is not a valid hex string.
-pub fn generate(hash: &str, size: u16, width: u16, color: Option<String>) -> String {
-    let mut bytes = byte_array(hash);
+pub fn generate(options: IdenticonOptions) -> String {
+    let IdenticonOptions {
+        hash,
+        color,
+        width,
+        size,
+    } = options;
+    let mut bytes = byte_array(&hash);
     let mut bits = bit_array(bytes.clone());
     bytes.reverse();
     bits.reverse();
-
-    let color = match color {
-        None => RandomColor::new()
-            //.hue(Color::Yellow)
-            //.luminosity(Luminosity::Light)
-            .to_hex(),
-        Some(c) => c,
-    };
 
     let box_width = width / (size + 1);
     let margin_width = (box_width / 2) + ((width % (size + 1)) / 2);
@@ -85,6 +92,55 @@ pub fn generate(hash: &str, size: u16, width: u16, color: Option<String>) -> Str
     svg.to_string()
 }
 
+/// Creates a hex string from a random string that can be used for generating an identicon
+pub fn new_hash(len: usize) -> String {
+    let rand_string: String = thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(len)
+        .map(char::from)
+        .collect();
+    hex::encode(&rand_string)
+}
+
+/// Is the argument for the generate function. It implements `Default`, for an opinionated but quick identicon.
+pub struct IdenticonOptions {
+    /// The lenght of the side of the square that is the identicon
+    pub size: u16,
+    /// A valid color string for svg (eg. `"#ffffff"`)
+    pub color: String,
+    /// Width in pixel of the identicon
+    pub width: u16,
+    /// A valid hex string from witch to generate the identicon
+    pub hash: String,
+}
+
+impl Default for IdenticonOptions {
+    /// Uses [rand](https://crates.io/crates/rand) and [hex](https://crates.io/crates/hex) to generate a valid hash. The size is selected randomly in a range from 4 to 8. The color is generated with [random_color](https://crates.io/crates/random_color/0.6.1) and `width = 128`.
+    fn default() -> Self {
+        let color = RandomColor::new()
+            //.hue(Color::Yellow)
+            //.luminosity(Luminosity::Light)
+            .to_hex();
+
+        let rand_string: String = thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(15)
+            .map(char::from)
+            .collect();
+
+        let hash = hex::encode(&rand_string);
+
+        let mut rng = rand::thread_rng();
+
+        IdenticonOptions {
+            size: rng.gen_range(4..8),
+            color,
+            width: 128,
+            hash,
+        }
+    }
+}
+
 fn byte_array(hash: &str) -> Vec<u16> {
     let mut bytes: Vec<u16> = vec![];
 
@@ -114,6 +170,8 @@ fn bit_array(a: Vec<u16>) -> Vec<u16> {
         .collect()
 }
 
+/// This function is avalible under the **`show-icon`** feature flag.\
+/// This will save the given svg string in an html file and than open it in a default browser's tab, using [webbrowser](https://crates.io/crates/webbrowser)
 #[cfg(feature = "show-icon")]
 pub fn show_icon(icon: &str) {
     use std::{fs, path::PathBuf};
@@ -125,8 +183,6 @@ pub fn show_icon(icon: &str) {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <script src="https://cdn.tailwindcss.com"></script>
-      
     </head>
     <body>
     {0}

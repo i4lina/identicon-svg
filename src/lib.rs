@@ -42,6 +42,7 @@ pub fn generate(options: IdenticonOptions) -> String {
         color,
         width,
         size,
+        background,
     } = options;
     let mut bytes = byte_array(&hash);
     let mut bits = bit_array(bytes.clone());
@@ -57,6 +58,8 @@ pub fn generate(options: IdenticonOptions) -> String {
     svg.add_attribute("viewBox", format!("0 0 {0} {0}", width));
     svg.add_attribute("preserveAspectRatio", "xMinYMin");
     svg.add_attribute("xmlns", "http://www.w3.org/2000/svg");
+
+    svg.add_child(background.to_elem(width));
 
     let mut map = vec![0u16; (size * size).into()];
     let mut i = 0;
@@ -102,6 +105,51 @@ pub fn new_hash(len: usize) -> String {
     hex::encode(&rand_string)
 }
 
+/// Is the type for the background field of IdenticonOptions. Implements `Default`: if not otherwise specified the identicon will have a background of color `rgb(240, 240, 240)` and will not have rounded angles.
+///
+/// # Example
+///
+/// ```
+/// use identicons_svg::{generate, IdenticonOptions, Background};
+///
+/// let svg = generate(IdenticonOptions {
+///     background: Background {
+///         color: "#8615b9",
+///         ..Default::default()    
+///         },
+///         ..Default::default()   
+/// })
+/// ```
+pub struct Background {
+    /// Rounded angles
+    pub r: u16,
+    /// A valid color string for svg (eg. `"#ffffff"`)
+    pub color: String,
+}
+
+impl Default for Background {
+    fn default() -> Self {
+        Background {
+            r: 0,
+            color: "rgb(240, 240, 240)".to_string(),
+        }
+    }
+}
+
+impl Background {
+    fn to_elem(&self, width: u16) -> XMLElement {
+        let mut child = XMLElement::new("rect");
+        child.add_attribute("x", 0);
+        child.add_attribute("y", 0);
+        child.add_attribute("width", width);
+        child.add_attribute("height", width);
+        child.add_attribute("rx", &self.r);
+        child.add_attribute("ry", &self.r);
+        child.add_attribute("fill", &self.color);
+        child
+    }
+}
+
 /// Is the argument for the generate function. It implements `Default`, for an opinionated but quick identicon.
 pub struct IdenticonOptions {
     /// The lenght of the side of the square that is the identicon
@@ -112,6 +160,8 @@ pub struct IdenticonOptions {
     pub width: u16,
     /// A valid hex string from witch to generate the identicon
     pub hash: String,
+    /// Edit the background of the identicon, default is provided.
+    pub background: Background,
 }
 
 impl Default for IdenticonOptions {
@@ -137,6 +187,7 @@ impl Default for IdenticonOptions {
             color,
             width: 128,
             hash,
+            background: Background::default(),
         }
     }
 }

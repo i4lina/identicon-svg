@@ -31,7 +31,9 @@ use simple_xml_builder::XMLElement;
 /// # Example
 ///
 /// ```
-/// let svg = generate(IdenticonOptions {color: "#a97896", width: 50, ..Default::default()})
+/// use identicons_svg::{generate, IdenticonOptions};
+///
+/// let svg: String = generate(IdenticonOptions {color: "#a97896", width: 50, ..Default::default()});
 /// ```
 ///
 /// # Panics
@@ -43,14 +45,19 @@ pub fn generate(options: IdenticonOptions) -> String {
         width,
         size,
         background,
+        margin,
     } = options;
+
     let mut bytes = byte_array(&hash);
     let mut bits = bit_array(bytes.clone());
     bytes.reverse();
     bits.reverse();
 
-    let box_width = width / (size + 1);
-    let margin_width = (box_width / 2) + ((width % (size + 1)) / 2);
+    let box_width = width / (size + margin);
+    let total_margin = width - (box_width * size);
+    let margin_width = f32::from(total_margin) / 2f32;
+    //let margin_width = (box_width / 2) + ((width % (size + 1)) / 2);
+    println!("box_width: {}, margin_width: {}", &box_width, &margin_width);
 
     let mut svg = XMLElement::new("svg");
     svg.add_attribute("widht", width);
@@ -81,9 +88,14 @@ pub fn generate(options: IdenticonOptions) -> String {
             let r = i / size;
             let c = i % size;
 
+            assert_eq!(
+                margin_width + f32::from((0 % size) * box_width),
+                f32::from(width - (box_width * size)) / 2f32
+            );
+
             let mut child = XMLElement::new("rect");
-            child.add_attribute("x", margin_width + (c * box_width));
-            child.add_attribute("y", margin_width + (r * box_width));
+            child.add_attribute("x", margin_width + f32::from(c * box_width));
+            child.add_attribute("y", margin_width + f32::from(r * box_width));
             child.add_attribute("width", box_width);
             child.add_attribute("height", box_width);
             child.add_attribute("fill", color.clone());
@@ -152,7 +164,8 @@ impl Background {
 
 /// Is the argument for the generate function. It implements `Default`, for an opinionated but quick identicon.
 pub struct IdenticonOptions {
-    /// The lenght of the side of the square that is the identicon
+    /// Each identicon is comprized of a grid of squares, arranged to form a square in itself. The `size` argument specifies the number of quares that make for a single row (or column) of the grid.\
+    /// The size is relative and the actual size in pixels of each square is dependent on the width (in pixel) of the whole identicon.
     pub size: u16,
     /// A valid color string for svg (eg. `"#ffffff"`)
     pub color: String,
@@ -162,10 +175,13 @@ pub struct IdenticonOptions {
     pub hash: String,
     /// Edit the background of the identicon, default is provided.
     pub background: Background,
+    /// The margin is defined as a number of additional blank squares disposed around the original squares grid (see size argument).\
+    /// It is not a value in pixel but is relative like the size argument. If `margin: 0` the colored part of the emoticon will touch the border of the svg, if `margin: 2` there will be all around the colored part of the image a blank space, of width equal to the width of a square in the identicon's grid.
+    pub margin: u16,
 }
 
 impl Default for IdenticonOptions {
-    /// Uses [rand](https://crates.io/crates/rand) and [hex](https://crates.io/crates/hex) to generate a valid hash. The size is selected randomly in a range from 4 to 8. The color is generated with [random_color](https://crates.io/crates/random_color/0.6.1) and `width = 128`.
+    /// Uses [rand](https://crates.io/crates/rand) and [hex](https://crates.io/crates/hex) to generate a valid hash. The size is selected randomly in a range from 4 to 8, the margin is 5. The color is generated with [random_color](https://crates.io/crates/random_color/0.6.1) and `width = 128`.
     fn default() -> Self {
         let color = RandomColor::new()
             //.hue(Color::Yellow)
@@ -188,6 +204,7 @@ impl Default for IdenticonOptions {
             width: 128,
             hash,
             background: Background::default(),
+            margin: 3,
         }
     }
 }

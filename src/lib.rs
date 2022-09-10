@@ -1,6 +1,6 @@
-//! Generate a new svg containing the identicon, given a size, a width and an hexadecimal string.
+//! Generate a new svg containing the identicon, given a size, a width and a hexadecimal string.
 //!
-//! This crate is basically a port from [identicons](https://github.com/Zunawe/identicons), a Javascript library written by [Bryce Wilson](https://github.com/Zunawe).\
+//! This crate is a port from [identicons](https://github.com/Zunawe/identicons), a Javascript library written by [Bryce Wilson](https://github.com/Zunawe).\
 //!
 //! While the original library allows for various types of identicon, such as square, polygon and circle, this library allows only the square type. Another difference is that while the original library obtained the icon color from the hash, this crate uses [random_color](https://crates.io/crates/random_color/0.6.1) to generate a more bright and visually-pleasing color.
 //!
@@ -10,17 +10,17 @@
 //! This will generate a new identicon.\
 //! The size of the new svg will be between 4x4 and 8x8 (always a square), the width will be 128, the color will be randomly chosen.\
 //!
-//! Identicon are made from hex hashes and you can provide one yourself. This is not a mean of encryption and you should not be using data relative to the user. That's why by default the hex hash is randomly generated. A function to create random hex hashes is also avalible.
+//! Identicons are made from hex hashes and you can provide one yourself. This is not a means of encryption and you should not be using data relative to the user. That's why by default the hex hash is randomly generated. A function to create random hex hashes is also available.
 //! ```
 //! use identicons_svg::generate;
 //!
 //! let svg: String = generate(IdenticonOptions::default())
-//! // svg will be a valid xml string, it could be saved to a file or displayed in a web page
+//! // svg will be a valid hex string, it could be saved to a file or displayed on a web page
 //!```
 //!
 //! # Optional features
 //!
-//! - **`show-icon`** - Function `show_icon(icon: &str)` to save the svg in a temporary file and open it in a tab of the default browser
+//! - **`show-icon`** - Function `show_icon(icon: &str)` to save the svg in a temporary file and open it in a tab of the default browser.
 
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use random_color::RandomColor;
@@ -107,7 +107,7 @@ pub fn generate(options: IdenticonOptions) -> String {
     svg.to_string()
 }
 
-/// Creates a hex string from a random string that can be used for generating an identicon
+/// Creates a hex string from a random string that can be used for generating an identicon.
 pub fn new_hash(len: usize) -> String {
     let rand_string: String = thread_rng()
         .sample_iter(&Alphanumeric)
@@ -162,20 +162,20 @@ impl Background {
     }
 }
 
-/// Is the argument for the generate function. It implements `Default`, for an opinionated but quick identicon.
+/// Is the argument for the `generate` function. It implements `Default`, for an opinionated but quick identicon.
 pub struct IdenticonOptions {
-    /// Each identicon is comprized of a grid of squares, arranged to form a square in itself. The `size` argument specifies the number of quares that make for a single row (or column) of the grid.\
-    /// The size is relative and the actual size in pixels of each square is dependent on the width (in pixel) of the whole identicon.
+    /// Each identicon is comprised of a grid of squares, arranged to form a square in itself. The `size` argument specifies the number of squares that make for a single row (or column) of the grid.\
+    /// The size is relative and the actual size in pixels of each square is dependent on the width (in pixels) of the whole identicon.
     pub size: u16,
-    /// A valid color string for svg (eg. `"#ffffff"`)
+    /// A valid color string for svg (eg. `"#ffffff"`).
     pub color: String,
-    /// Width in pixel of the identicon
+    /// Width in pixel of the identicon.
     pub width: u16,
-    /// A valid hex string from witch to generate the identicon
+    /// A valid hex string from which to generate the identicon.
     pub hash: String,
     /// Edit the background of the identicon, default is provided.
     pub background: Background,
-    /// The margin is defined as a number of additional blank squares disposed around the original squares grid (see size argument).\
+    /// The margin is defined as several additional blank squares disposed around the original squares grid (see size argument).\
     /// It is not a value in pixel but is relative like the size argument. If `margin: 0` the colored part of the emoticon will touch the border of the svg, if `margin: 2` there will be all around the colored part of the image a blank space, of width equal to the width of a square in the identicon's grid.
     pub margin: u16,
 }
@@ -238,8 +238,8 @@ fn bit_array(a: Vec<u16>) -> Vec<u16> {
         .collect()
 }
 
-/// This function is avalible under the **`show-icon`** feature flag.\
-/// This will save the given svg string in an html file and than open it in a default browser's tab, using [webbrowser](https://crates.io/crates/webbrowser)
+/// This function is available under the **`show-icon`** feature flag.\
+/// This will save the given svg string in an HTML file and than open it in a default browser's tab, using [webbrowser](https://crates.io/crates/webbrowser)
 #[cfg(feature = "show-icon")]
 pub fn show_icon(icon: &str) {
     use std::{fs, path::PathBuf};

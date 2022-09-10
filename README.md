@@ -2,7 +2,7 @@
 
 Rust crate to quickly generate identicon avatar svgs.
 
-Generate a new svg containing the identicon, given a size, a width and an hexadecimal string.
+Generate a new svg containing the identicon, given a size, a width and a hexadecimal string.
 
 This crate is basically a port from [identicons](https://github.com/Zunawe/identicons), a Javascript library written by [Bryce Wilson](https://github.com/Zunawe).
 
@@ -13,7 +13,7 @@ While the original library allows for various types of identicon, such as square
 This will generate a new identicon.
 The size of the new svg will be between 4x4 and 8x8 (always a square), the width will be 128, the color will be randomly chosen.
 
-Identicon are made from hex hashes and you can provide one yourself. This is not a mean of encryption and you should not be using data relative to the user. That's why by default the hex hash is randomly generated. A function to create random hex hashes is also avalible.
+Identicons are made from hex hashes and you can provide one yourself. This is not a means of encryption and you should not be using data relative to the user. That's why by default the hex hash is randomly generated. A function to create random hex hashes is also available.
 
 ```rust
 use identicons_svg::generate;

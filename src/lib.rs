@@ -56,8 +56,6 @@ pub fn generate(options: IdenticonOptions) -> String {
     let box_width = width / (size + margin);
     let total_margin = width - (box_width * size);
     let margin_width = f32::from(total_margin) / 2f32;
-    //let margin_width = (box_width / 2) + ((width % (size + 1)) / 2);
-    println!("box_width: {}, margin_width: {}", &box_width, &margin_width);
 
     let mut svg = XMLElement::new("svg");
     svg.add_attribute("widht", width);
@@ -69,21 +67,17 @@ pub fn generate(options: IdenticonOptions) -> String {
     svg.add_child(background.to_elem(width));
 
     let mut map = vec![0u16; (size * size).into()];
-    let mut i = 0;
-    while i < size {
+
+    for i in 0..size {
         let mut c = 0;
         while c < size / 2 {
             map[usize::from((i * size) + c)] = bits[usize::from((i * size) + c)];
             map[usize::from(((i + 1) * size) - (c + 1))] = bits[usize::from((i * size) + c)];
             c += 1
         }
-
-        i += 1
     }
 
-    let mut i = 0;
-
-    while i < size * size {
+    for i in 0..(size * size) {
         if map[usize::from(i)] == 1 {
             let r = i / size;
             let c = i % size;
@@ -101,7 +95,6 @@ pub fn generate(options: IdenticonOptions) -> String {
             child.add_attribute("fill", color.clone());
             svg.add_child(child)
         }
-        i += 1
     }
 
     svg.to_string()
@@ -214,7 +207,7 @@ fn byte_array(hash: &str) -> Vec<u16> {
 
     let mut i = 0;
     while i < &hash.len() / 2 {
-        let bytei = &hash.len() - ((i + 1) * 2);
+        let bytei = hash.len() - ((i + 1) * 2);
         bytes.push(u16::from(
             u8::from_str_radix(&hash[bytei..bytei + 2], 16).unwrap(),
         ));
